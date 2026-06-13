@@ -21,7 +21,7 @@ function App() {
       const formData = new FormData();
       if (youtubeUrl) formData.append("youtube_url", youtubeUrl);
       if (file) formData.append("file", file);
-      const response = await axios.post("https://proudly-subject-customers-travelers.trycloudflare.com/process", formData);
+      const response = await axios.post("https://originally-awareness-concerns-scheme.trycloudflare.com/process", formData);
       if (response.data.error) {
         setError(response.data.error);
       } else {
@@ -116,7 +116,7 @@ function App() {
                   {clip.reason}
                 </div>
                 <a
-                href={"https://proudly-subject-customers-travelers.trycloudflare.com" + clip.download_url}
+                href={"https://originally-awareness-concerns-scheme.trycloudflare.com" + clip.download_url}
                 download
                 style={{
                 display: "inline-block",
