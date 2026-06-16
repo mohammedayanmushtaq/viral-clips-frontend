@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const RAZORPAY_KEY = "Vg9VwvI8DT1g3bY7z58b5V2M";
+const RAZORPAY_KEY = "rzp_test_T2HDs4mEPi9poz";
 
 function Upgrade({ user, onClose }) {
   const [loading, setLoading] = useState(false);
@@ -14,7 +14,6 @@ function Upgrade({ user, onClose }) {
       currency: "INR",
       name: "FlickzClips",
       description: "Pro Plan - Unlimited Videos",
-      image: "https://flickzclips.vercel.app/favicon.ico",
       prefill: {
         name: user?.displayName || "",
         email: user?.email || "",
@@ -23,7 +22,7 @@ function Upgrade({ user, onClose }) {
         color: "#a855f7",
       },
       handler: function (response) {
-        alert("Payment successful! Your Pro plan is now active.");
+        alert("Payment successful! Your Pro plan is now active.\nPayment ID: " + response.razorpay_payment_id);
         onClose();
         setLoading(false);
       },
