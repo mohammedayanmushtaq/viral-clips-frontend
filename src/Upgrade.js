@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { auth } from "./firebase";
 
 const RAZORPAY_KEY = "rzp_live_T1ZTORbeCUJIEt,LftvK0rf4dVMRoxwHWjtgI4r";
 
