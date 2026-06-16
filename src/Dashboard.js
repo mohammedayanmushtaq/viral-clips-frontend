@@ -9,11 +9,11 @@ const BACKEND = "https://originally-awareness-concerns-scheme.trycloudflare.com"
 
 const CAPTION_PRESETS = [
   { id: "none", label: "No caption", preview: null },
-  { id: "karaoke", label: "Karaoke", preview: { text: "CLIPPING WITH AI", bg: "#000", color: "#fff", highlight: "#00ff00" } },
-  { id: "beasty", label: "Beasty", preview: { text: "CHOOSE A STYLE", bg: "#000", color: "#fff", highlight: "#ff6600" } },
-  { id: "mozi", label: "Mozi", preview: { text: "TO GET STARTED", bg: "#000", color: "#fff", highlight: "#ff0000" } },
-  { id: "minimal", label: "Minimal", preview: { text: "To get started", bg: "#000", color: "#888", highlight: null } },
-  { id: "tiktok", label: "TikTok", preview: { text: "TO GET STARTED", bg: "#000", color: "#fff", highlight: "#a855f7" } },
+  { id: "karaoke", label: "Karaoke", preview: { text: "CLIPPING WITH AI", color: "#fff" } },
+  { id: "beasty", label: "Beasty", preview: { text: "CHOOSE A STYLE", color: "#ff6600" } },
+  { id: "mozi", label: "Mozi", preview: { text: "TO GET STARTED", color: "#ff0000" } },
+  { id: "minimal", label: "Minimal", preview: { text: "To get started", color: "#888" } },
+  { id: "tiktok", label: "TikTok", preview: { text: "TO GET STARTED", color: "#a855f7" } },
 ];
 
 function Dashboard({ user }) {
@@ -62,7 +62,7 @@ function Dashboard({ user }) {
     <div style={{ display: "flex", minHeight: "100vh", background: "#0a0a0a", color: "#fff", fontFamily: "Inter, sans-serif" }}>
 
       {/* Left Sidebar */}
-      <div style={{ width: "60px", background: "#111", borderRight: "1px solid #1f1f1f", display: "flex", flexDirection: "column", alignItems: "center", padding: "16px 0", gap: "8px", position: "fixed", height: "100vh" }}>
+      <div style={{ width: "60px", background: "#111", borderRight: "1px solid #1f1f1f", display: "flex", flexDirection: "column", alignItems: "center", padding: "16px 0", gap: "8px", position: "fixed", height: "100vh", zIndex: 100 }}>
         <div style={{ fontSize: "18px", fontWeight: "900", color: "#a855f7", marginBottom: "24px" }}>F</div>
         {[
           { id: "home", icon: "⌂" },
@@ -84,10 +84,7 @@ function Dashboard({ user }) {
           </div>
         ))}
         <div style={{ marginTop: "auto" }}>
-          <div
-            onClick={handleLogout}
-            style={{ width: "40px", height: "40px", borderRadius: "10px", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "14px" }}
-          >
+          <div onClick={handleLogout} style={{ width: "40px", height: "40px", borderRadius: "10px", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "14px" }}>
             ⏻
           </div>
         </div>
@@ -114,8 +111,7 @@ function Dashboard({ user }) {
         {/* Page Content */}
         <div style={{ flex: 1, padding: "40px 60px", maxWidth: "900px", margin: "0 auto", width: "100%" }}>
 
-          {/* Title */}
-          <h1 style={{ fontSize: "36px", fontWeight: "900", textAlign: "center", marginBottom: "32px", color: "#fff" }}>FlickzClips</h1>
+          <h1 style={{ fontSize: "36px", fontWeight: "900", textAlign: "center", marginBottom: "32px" }}>FlickzClips</h1>
 
           {/* Upload Box */}
           <div style={{ background: "#111", border: "1px solid #222", borderRadius: "16px", padding: "24px", marginBottom: "32px" }}>
@@ -176,7 +172,7 @@ function Dashboard({ user }) {
                   >
                     <div style={{ background: "#000", borderRadius: "6px", padding: "10px 4px", marginBottom: "6px", minHeight: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {preset.preview ? (
-                        <span style={{ fontSize: "9px", fontWeight: "bold", color: preset.preview.color, textShadow: "1px 1px 2px #000" }}>
+                        <span style={{ fontSize: "9px", fontWeight: "bold", color: preset.preview.color }}>
                           {preset.preview.text}
                         </span>
                       ) : (
@@ -231,9 +227,7 @@ function Dashboard({ user }) {
         </div>
       </div>
 
-      {/* Upgrade Modal */}
       {showUpgrade && <Upgrade user={user} onClose={() => setShowUpgrade(false)} />}
-
     </div>
   );
 }
