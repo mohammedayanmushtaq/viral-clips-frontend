@@ -104,13 +104,16 @@ function LandingPage() {
         </div>
       </div>
 
-      {/* Footer */}
+{/* Footer */}
       <div style={{ borderTop: "1px solid #1f1f1f", padding: "32px 60px", display: "flex", justifyContent: "space-between", alignItems: "center", color: "#555", fontSize: "13px" }}>
         <div style={{ color: "#a855f7", fontWeight: "800", fontSize: "16px" }}>FlickzClips</div>
         <div>© 2026 FlickzClips. All rights reserved.</div>
+        <span onClick={() => navigate("/terms")} style={{ cursor: "pointer", color: "#555" }}>Terms & Refund Policy</span>
       </div>
+
     </div>
   );
 }
 
 export default LandingPage;
+

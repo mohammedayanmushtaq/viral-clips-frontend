@@ -4,6 +4,7 @@ import { auth } from "./firebase";
 import LandingPage from "./LandingPage";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
+import Terms from "./Terms";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -26,6 +27,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/terms" element={<Terms />} />
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
         <Route path="/dashboard" element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} />
