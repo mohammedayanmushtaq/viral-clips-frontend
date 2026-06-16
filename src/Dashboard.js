@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "./firebase";
+import { auth, db } from "./firebase";
 import { signOut } from "firebase/auth";
+import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
 import axios from "axios";
 import Upgrade from "./Upgrade";
 
@@ -27,7 +28,30 @@ function Dashboard({ user }) {
   const [aspectRatio, setAspectRatio] = useState("9:16");
   const [activeTab, setActiveTab] = useState("home");
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [credits, setCredits] = useState(3);
+  const [isPro, setIsPro] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        setCredits(userSnap.data().credits ?? 3);
+        setIsPro(userSnap.data().isPro ?? false);
+      } else {
+        await setDoc(userRef, {
+          email: user.email,
+          credits: 3,
+          isPro: false,
+          createdAt: new Date()
+        });
+        setCredits(3);
+        setIsPro(false);
+      }
+    };
+    loadUserData();
+  }, [user.uid]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -36,6 +60,14 @@ function Dashboard({ user }) {
 
   const handleSubmit = async () => {
     if (!file && !youtubeUrl) { setError("Please upload a video or paste a YouTube link."); return; }
+
+    // Check credits
+    if (!isPro && credits <= 0) {
+      setError("You have used all 3 free videos. Please upgrade to Pro to continue!");
+      setShowUpgrade(true);
+      return;
+    }
+
     setLoading(true); setError(""); setClips([]); setProgress(0);
 
     const interval = setInterval(() => {
@@ -49,8 +81,19 @@ function Dashboard({ user }) {
       formData.append("caption_style", captionStyle);
       formData.append("aspect_ratio", aspectRatio);
       const response = await axios.post(`${BACKEND}/process`, formData);
-      if (response.data.error) { setError(response.data.error); }
-      else { setClips(response.data.clips); setProgress(100); }
+
+      if (response.data.error) {
+        setError(response.data.error);
+      } else {
+        setClips(response.data.clips);
+        setProgress(100);
+        // Deduct 1 credit if not pro
+        if (!isPro) {
+          const userRef = doc(db, "users", user.uid);
+          await updateDoc(userRef, { credits: increment(-1) });
+          setCredits(prev => prev - 1);
+        }
+      }
     } catch (err) {
       setError("Something went wrong. Make sure the backend is running.");
     }
@@ -96,12 +139,17 @@ function Dashboard({ user }) {
         {/* Top Bar */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 24px", borderBottom: "1px solid #1f1f1f", background: "#0a0a0a" }}>
           <div style={{ fontSize: "13px", color: "#888" }}>
-            You are on the Free Plan — <span onClick={() => setShowUpgrade(true)} style={{ color: "#a855f7", cursor: "pointer" }}>Upgrade</span>
+            {isPro
+              ? <span style={{ color: "#4ade80" }}>✓ Pro Plan</span>
+              : <>You are on the Free Plan — <span onClick={() => setShowUpgrade(true)} style={{ color: "#a855f7", cursor: "pointer" }}>Upgrade</span></>
+            }
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span onClick={() => setShowUpgrade(true)} style={{ background: "#1a1a2e", border: "1px solid #a855f7", borderRadius: "20px", padding: "4px 12px", fontSize: "12px", color: "#a855f7", cursor: "pointer" }}>
-              ⚡ 3 credits left
-            </span>
+            {!isPro && (
+              <span onClick={() => setShowUpgrade(true)} style={{ background: credits <= 0 ? "#3a1a1a" : "#1a1a2e", border: `1px solid ${credits <= 0 ? "#f87171" : "#a855f7"}`, borderRadius: "20px", padding: "4px 12px", fontSize: "12px", color: credits <= 0 ? "#f87171" : "#a855f7", cursor: "pointer" }}>
+                ⚡ {credits} credits left
+              </span>
+            )}
             <div style={{ width: "32px", height: "32px", background: "#a855f7", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "13px" }}>
               {user?.displayName ? user.displayName[0].toUpperCase() : user?.email[0].toUpperCase()}
             </div>
