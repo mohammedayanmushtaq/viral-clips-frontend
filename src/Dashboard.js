@@ -51,6 +51,7 @@ function Dashboard({ user }) {
       }
     };
     loadUserData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.uid]);
 
   const handleLogout = async () => {
