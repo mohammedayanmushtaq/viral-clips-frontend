@@ -3,28 +3,30 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "./firebase";
 import { signOut } from "firebase/auth";
 import axios from "axios";
+import Upgrade from "./Upgrade";
 
 const BACKEND = "https://originally-awareness-concerns-scheme.trycloudflare.com";
 
-const CAPTION_STYLES = [
-  { id: "tiktok", label: "TikTok", desc: "Bold white with black outline", color: "#fff", outline: "#000" },
-  { id: "minimal", label: "Minimal", desc: "Clean and simple", color: "#fff", outline: "#333" },
-  { id: "colorful", label: "Colorful", desc: "Bright and eye-catching", color: "#00FFFF", outline: "#FF0000" },
-  { id: "opus", label: "Opus Style", desc: "Dark background highlight", color: "#fff", outline: "#000" },
-];
-
-const ASPECT_RATIOS = [
-  { id: "9:16", label: "9:16 Vertical", desc: "Reels, Shorts, TikTok", icon: "▯" },
-  { id: "16:9", label: "16:9 Horizontal", desc: "YouTube, Twitter", icon: "▭" },
+const CAPTION_PRESETS = [
+  { id: "none", label: "No caption", preview: null },
+  { id: "karaoke", label: "Karaoke", preview: { text: "CLIPPING WITH AI", bg: "#000", color: "#fff", highlight: "#00ff00" } },
+  { id: "beasty", label: "Beasty", preview: { text: "CHOOSE A STYLE", bg: "#000", color: "#fff", highlight: "#ff6600" } },
+  { id: "mozi", label: "Mozi", preview: { text: "TO GET STARTED", bg: "#000", color: "#fff", highlight: "#ff0000" } },
+  { id: "minimal", label: "Minimal", preview: { text: "To get started", bg: "#000", color: "#888", highlight: null } },
+  { id: "tiktok", label: "TikTok", preview: { text: "TO GET STARTED", bg: "#000", color: "#fff", highlight: "#a855f7" } },
 ];
 
 function Dashboard({ user }) {
   const [file, setFile] = useState(null);
+  const [youtubeUrl, setYoutubeUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [clips, setClips] = useState([]);
   const [error, setError] = useState("");
-  const [captionStyle, setCaptionStyle] = useState("tiktok");
+  const [captionStyle, setCaptionStyle] = useState("karaoke");
   const [aspectRatio, setAspectRatio] = useState("9:16");
+  const [activeTab, setActiveTab] = useState("home");
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -33,144 +35,205 @@ function Dashboard({ user }) {
   };
 
   const handleSubmit = async () => {
-    if (!file) { setError("Please upload a video file."); return; }
-    setLoading(true); setError(""); setClips([]);
+    if (!file && !youtubeUrl) { setError("Please upload a video or paste a YouTube link."); return; }
+    setLoading(true); setError(""); setClips([]); setProgress(0);
+
+    const interval = setInterval(() => {
+      setProgress(prev => prev < 90 ? prev + Math.random() * 10 : prev);
+    }, 3000);
+
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      if (file) formData.append("file", file);
+      if (youtubeUrl) formData.append("youtube_url", youtubeUrl);
       formData.append("caption_style", captionStyle);
       formData.append("aspect_ratio", aspectRatio);
       const response = await axios.post(`${BACKEND}/process`, formData);
       if (response.data.error) { setError(response.data.error); }
-      else { setClips(response.data.clips); }
+      else { setClips(response.data.clips); setProgress(100); }
     } catch (err) {
       setError("Something went wrong. Make sure the backend is running.");
     }
+    clearInterval(interval);
     setLoading(false);
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", color: "#fff", fontFamily: "Inter, sans-serif" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#0a0a0a", color: "#fff", fontFamily: "Inter, sans-serif" }}>
 
-      {/* Navbar */}
-      <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 40px", borderBottom: "1px solid #1f1f1f" }}>
-        <div style={{ fontSize: "20px", fontWeight: "800", color: "#a855f7" }}>FlickzClips</div>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <span style={{ background: "#1a1a2e", border: "1px solid #a855f7", borderRadius: "20px", padding: "4px 12px", fontSize: "12px", color: "#a855f7" }}>
-            Free — 3 videos left
-          </span>
-          <div style={{ width: "36px", height: "36px", background: "#a855f7", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
-            {user?.displayName ? user.displayName[0].toUpperCase() : user?.email[0].toUpperCase()}
+      {/* Left Sidebar */}
+      <div style={{ width: "60px", background: "#111", borderRight: "1px solid #1f1f1f", display: "flex", flexDirection: "column", alignItems: "center", padding: "16px 0", gap: "8px", position: "fixed", height: "100vh" }}>
+        <div style={{ fontSize: "18px", fontWeight: "900", color: "#a855f7", marginBottom: "24px" }}>F</div>
+        {[
+          { id: "home", icon: "⌂" },
+          { id: "projects", icon: "▦" },
+          { id: "files", icon: "▭" },
+        ].map(item => (
+          <div
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
+            style={{
+              width: "40px", height: "40px", borderRadius: "10px",
+              background: activeTab === item.id ? "#1a1a2e" : "transparent",
+              border: activeTab === item.id ? "1px solid #a855f7" : "1px solid transparent",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", fontSize: "16px"
+            }}
+          >
+            {item.icon}
           </div>
-          <button onClick={handleLogout} style={{ padding: "8px 16px", background: "transparent", border: "1px solid #444", borderRadius: "8px", color: "#aaa", cursor: "pointer", fontSize: "13px" }}>
-            Logout
-          </button>
-        </div>
-      </nav>
-
-      <div style={{ maxWidth: "900px", margin: "40px auto", padding: "0 20px" }}>
-        <h1 style={{ fontSize: "32px", fontWeight: "800", marginBottom: "8px" }}>Create Viral Clips</h1>
-        <p style={{ color: "#888", marginBottom: "40px" }}>Upload your video and AI will find the best moments</p>
-
-        {/* Upload Box */}
-        <div style={{ background: "#111", border: "2px dashed #333", borderRadius: "16px", padding: "40px", textAlign: "center", marginBottom: "32px" }}>
-          <div style={{ fontSize: "40px", marginBottom: "12px" }}>🎬</div>
-          <p style={{ color: "#888", marginBottom: "16px" }}>Drop your video here or click to browse</p>
-          <input type="file" accept="video/*" onChange={(e) => setFile(e.target.files[0])} style={{ display: "none" }} id="fileInput" />
-          <label htmlFor="fileInput" style={{ padding: "10px 24px", background: "#1a1a1a", border: "1px solid #444", borderRadius: "8px", cursor: "pointer", fontSize: "14px" }}>
-            Choose File
-          </label>
-          {file && <p style={{ color: "#a855f7", marginTop: "12px", fontSize: "14px" }}>{file.name}</p>}
-        </div>
-
-        {/* Caption Style */}
-        <div style={{ marginBottom: "32px" }}>
-          <h2 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "16px" }}>Caption Style</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
-            {CAPTION_STYLES.map((style) => (
-              <div
-                key={style.id}
-                onClick={() => setCaptionStyle(style.id)}
-                style={{
-                  background: captionStyle === style.id ? "#1a1a2e" : "#111",
-                  border: captionStyle === style.id ? "2px solid #a855f7" : "2px solid #222",
-                  borderRadius: "12px",
-                  padding: "16px",
-                  cursor: "pointer",
-                  textAlign: "center"
-                }}
-              >
-                <div style={{ background: "#000", borderRadius: "8px", padding: "12px", marginBottom: "8px", fontSize: "12px", fontWeight: "bold", color: style.color, textShadow: `1px 1px 2px ${style.outline}` }}>
-                  Sample Text
-                </div>
-                <div style={{ fontSize: "13px", fontWeight: "700" }}>{style.label}</div>
-                <div style={{ fontSize: "11px", color: "#888", marginTop: "4px" }}>{style.desc}</div>
-              </div>
-            ))}
+        ))}
+        <div style={{ marginTop: "auto" }}>
+          <div
+            onClick={handleLogout}
+            style={{ width: "40px", height: "40px", borderRadius: "10px", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "14px" }}
+          >
+            ⏻
           </div>
         </div>
-
-        {/* Aspect Ratio */}
-        <div style={{ marginBottom: "32px" }}>
-          <h2 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "16px" }}>Aspect Ratio</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-            {ASPECT_RATIOS.map((ratio) => (
-              <div
-                key={ratio.id}
-                onClick={() => setAspectRatio(ratio.id)}
-                style={{
-                  background: aspectRatio === ratio.id ? "#1a1a2e" : "#111",
-                  border: aspectRatio === ratio.id ? "2px solid #a855f7" : "2px solid #222",
-                  borderRadius: "12px",
-                  padding: "20px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "16px"
-                }}
-              >
-                <div style={{ fontSize: "32px" }}>{ratio.icon}</div>
-                <div>
-                  <div style={{ fontSize: "15px", fontWeight: "700" }}>{ratio.label}</div>
-                  <div style={{ fontSize: "12px", color: "#888", marginTop: "4px" }}>{ratio.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {error && (
-          <div style={{ padding: "12px", background: "#3a1a1a", borderRadius: "8px", color: "#f87171", fontSize: "14px", marginBottom: "16px" }}>
-            {error}
-          </div>
-        )}
-
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          style={{ width: "100%", padding: "16px", background: loading ? "#555" : "#a855f7", border: "none", borderRadius: "10px", color: "#fff", cursor: loading ? "not-allowed" : "pointer", fontSize: "16px", fontWeight: "bold" }}
-        >
-          {loading ? "Processing... please wait" : "Generate Viral Clips"}
-        </button>
-
-        {/* Results */}
-        {clips.length > 0 && (
-          <div style={{ marginTop: "48px" }}>
-            <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "24px" }}>Your Viral Clips</h2>
-            {clips.map((clip) => (
-              <div key={clip.clip_number} style={{ background: "#111", border: "1px solid #222", borderRadius: "12px", padding: "24px", marginBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <div style={{ fontWeight: "700", marginBottom: "4px" }}>Clip {clip.clip_number}</div>
-                  <div style={{ color: "#888", fontSize: "14px" }}>{clip.reason}</div>
-                </div>
-                <a href={`${BACKEND}${clip.download_url}`} download target="_blank" rel="noopener noreferrer" style={{ padding: "10px 20px", background: "#a855f7", color: "#fff", borderRadius: "8px", textDecoration: "none", fontSize: "14px", fontWeight: "bold" }}>
-                  Download
-                </a>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
+
+      {/* Main Content */}
+      <div style={{ marginLeft: "60px", flex: 1, display: "flex", flexDirection: "column" }}>
+
+        {/* Top Bar */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 24px", borderBottom: "1px solid #1f1f1f", background: "#0a0a0a" }}>
+          <div style={{ fontSize: "13px", color: "#888" }}>
+            You are on the Free Plan — <span onClick={() => setShowUpgrade(true)} style={{ color: "#a855f7", cursor: "pointer" }}>Upgrade</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span onClick={() => setShowUpgrade(true)} style={{ background: "#1a1a2e", border: "1px solid #a855f7", borderRadius: "20px", padding: "4px 12px", fontSize: "12px", color: "#a855f7", cursor: "pointer" }}>
+              ⚡ 3 credits left
+            </span>
+            <div style={{ width: "32px", height: "32px", background: "#a855f7", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "13px" }}>
+              {user?.displayName ? user.displayName[0].toUpperCase() : user?.email[0].toUpperCase()}
+            </div>
+          </div>
+        </div>
+
+        {/* Page Content */}
+        <div style={{ flex: 1, padding: "40px 60px", maxWidth: "900px", margin: "0 auto", width: "100%" }}>
+
+          {/* Title */}
+          <h1 style={{ fontSize: "36px", fontWeight: "900", textAlign: "center", marginBottom: "32px", color: "#fff" }}>FlickzClips</h1>
+
+          {/* Upload Box */}
+          <div style={{ background: "#111", border: "1px solid #222", borderRadius: "16px", padding: "24px", marginBottom: "32px" }}>
+            <input
+              type="text"
+              placeholder="Drop a YouTube link..."
+              value={youtubeUrl}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
+              style={{ width: "100%", padding: "14px", background: "#1a1a1a", border: "1px solid #333", borderRadius: "10px", color: "#fff", fontSize: "14px", marginBottom: "12px", boxSizing: "border-box" }}
+            />
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <input type="file" accept="video/*" onChange={(e) => setFile(e.target.files[0])} style={{ display: "none" }} id="fileInput" />
+              <label htmlFor="fileInput" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#1a1a1a", border: "1px solid #333", borderRadius: "8px", cursor: "pointer", fontSize: "14px", color: "#aaa" }}>
+                Upload {file && <span style={{ color: "#a855f7" }}>{file.name.substring(0, 20)}...</span>}
+              </label>
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                style={{ flex: 1, padding: "10px 20px", background: loading ? "#555" : "#fff", border: "none", borderRadius: "8px", color: "#000", cursor: loading ? "not-allowed" : "pointer", fontSize: "14px", fontWeight: "bold" }}
+              >
+                {loading ? `Processing ${Math.round(progress)}%...` : "Get clips in 1 click"}
+              </button>
+            </div>
+
+            {loading && (
+              <div style={{ marginTop: "16px" }}>
+                <div style={{ background: "#222", borderRadius: "4px", height: "4px" }}>
+                  <div style={{ background: "#a855f7", height: "4px", borderRadius: "4px", width: `${progress}%`, transition: "width 0.5s" }} />
+                </div>
+                <p style={{ color: "#888", fontSize: "12px", marginTop: "8px" }}>AI is finding the best viral moments...</p>
+              </div>
+            )}
+          </div>
+
+          {/* Caption Presets */}
+          {!loading && clips.length === 0 && (
+            <div style={{ marginBottom: "32px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                <h3 style={{ fontSize: "16px", fontWeight: "700" }}>Caption Style</h3>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <span onClick={() => setAspectRatio("9:16")} style={{ padding: "6px 12px", background: aspectRatio === "9:16" ? "#a855f7" : "#1a1a1a", borderRadius: "20px", fontSize: "12px", cursor: "pointer" }}>9:16</span>
+                  <span onClick={() => setAspectRatio("16:9")} style={{ padding: "6px 12px", background: aspectRatio === "16:9" ? "#a855f7" : "#1a1a1a", borderRadius: "20px", fontSize: "12px", cursor: "pointer" }}>16:9</span>
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "12px" }}>
+                {CAPTION_PRESETS.map((preset) => (
+                  <div
+                    key={preset.id}
+                    onClick={() => setCaptionStyle(preset.id)}
+                    style={{
+                      background: "#111",
+                      border: captionStyle === preset.id ? "2px solid #a855f7" : "2px solid #222",
+                      borderRadius: "10px",
+                      padding: "12px 8px",
+                      cursor: "pointer",
+                      textAlign: "center"
+                    }}
+                  >
+                    <div style={{ background: "#000", borderRadius: "6px", padding: "10px 4px", marginBottom: "6px", minHeight: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {preset.preview ? (
+                        <span style={{ fontSize: "9px", fontWeight: "bold", color: preset.preview.color, textShadow: "1px 1px 2px #000" }}>
+                          {preset.preview.text}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: "16px", color: "#444" }}>⊘</span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: "11px", color: "#aaa" }}>{preset.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div style={{ padding: "12px", background: "#3a1a1a", borderRadius: "8px", color: "#f87171", fontSize: "14px", marginBottom: "16px" }}>
+              {error}
+            </div>
+          )}
+
+          {/* Results */}
+          {clips.length > 0 && (
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+                <h2 style={{ fontSize: "20px", fontWeight: "700" }}>Your Viral Clips ({clips.length})</h2>
+                <button onClick={() => { setClips([]); setFile(null); setYoutubeUrl(""); }} style={{ padding: "8px 16px", background: "transparent", border: "1px solid #444", borderRadius: "8px", color: "#aaa", cursor: "pointer", fontSize: "13px" }}>
+                  New video
+                </button>
+              </div>
+              {clips.map((clip) => (
+                <div key={clip.clip_number} style={{ background: "#111", border: "1px solid #222", borderRadius: "12px", padding: "20px", marginBottom: "16px", display: "flex", gap: "20px", alignItems: "flex-start" }}>
+                  <div style={{ background: "#1a1a1a", borderRadius: "8px", width: "120px", height: "80px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "24px" }}>
+                    🎬
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+                      <span style={{ background: "#a855f7", borderRadius: "20px", padding: "2px 10px", fontSize: "12px", fontWeight: "bold" }}>
+                        Clip {clip.clip_number}
+                      </span>
+                      <span style={{ background: "#1a2e1a", color: "#4ade80", borderRadius: "20px", padding: "2px 10px", fontSize: "12px" }}>
+                        Score: {85 + clip.clip_number * 3}
+                      </span>
+                    </div>
+                    <p style={{ color: "#aaa", fontSize: "14px", margin: 0 }}>{clip.reason}</p>
+                  </div>
+                  <a href={`${BACKEND}${clip.download_url}`} download target="_blank" rel="noopener noreferrer" style={{ padding: "10px 20px", background: "#a855f7", color: "#fff", borderRadius: "8px", textDecoration: "none", fontSize: "13px", fontWeight: "bold", flexShrink: 0 }}>
+                    Download HD
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Upgrade Modal */}
+      {showUpgrade && <Upgrade user={user} onClose={() => setShowUpgrade(false)} />}
+
     </div>
   );
 }
