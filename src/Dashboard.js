@@ -6,7 +6,7 @@ import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
 import axios from "axios";
 import Upgrade from "./Upgrade";
 
-const BACKEND = "https://originally-awareness-concerns-scheme.trycloudflare.com";
+const BACKEND = "https://hop-rugs-register-hospital.trycloudflare.com";
 
 const CAPTION_PRESETS = [
   { id: "none", label: "No caption", preview: null },
