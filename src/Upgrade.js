@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const RAZORPAY_KEY = "rzp_test_T2HDs4mEPi9poz";
+const RAZORPAY_KEY = "rzp_live_T2HWP2sSx6dwT8";
 
 function Upgrade({ user, onClose }) {
   const [loading, setLoading] = useState(false);
