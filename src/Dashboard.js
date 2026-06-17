@@ -9,18 +9,18 @@ import Upgrade from "./Upgrade";
 const BACKEND = "https://flickzclips.in";
 
 const CAPTION_PRESETS = [
-  { id: "none", label: "None", desc: "No captions", preview: null },
-  { id: "karaoke", label: "Karaoke", desc: "Word highlight", color: "#00ff00", bg: "#000" },
-  { id: "beasty", label: "Beasty", desc: "Bold italic", color: "#fff", bg: "#000" },
-  { id: "deepdiver", label: "Deep Diver", desc: "Clean minimal", color: "#fff", bg: "#1a1a1a" },
-  { id: "youshaei", label: "Youshaei", desc: "Two color pop", color: "#00ff00", bg: "#000" },
-  { id: "podp", label: "Pod P", desc: "Pink accent", color: "#ff69b4", bg: "#000" },
-  { id: "mozi", label: "Mozi", desc: "Purple style", color: "#a855f7", bg: "#000" },
-  { id: "popline", label: "Popline", desc: "Small top text", color: "#fff", bg: "#000" },
-  { id: "simple", label: "Simple", desc: "Classic white", color: "#fff", bg: "#000" },
-  { id: "thinkmedia", label: "Think Media", desc: "Yellow bold", color: "#FFD700", bg: "#000" },
-  { id: "tiktok", label: "TikTok", desc: "Purple glow", color: "#a855f7", bg: "#000" },
-  { id: "minimal", label: "Minimal", desc: "Subtle grey", color: "#aaa", bg: "#000" },
+  { id: "none", label: "None", desc: "No captions", textPreview: null },
+  { id: "karaoke", label: "Karaoke", desc: "Word highlight", textPreview: "TO GET", highlight: "#00ff00", color: "#fff" },
+  { id: "beasty", label: "Beasty", desc: "Bold italic", textPreview: "CHOOSE A STYLE", highlight: null, color: "#fff" },
+  { id: "deepdiver", label: "Deep Diver", desc: "Clean minimal", textPreview: "to get started", highlight: null, color: "#fff" },
+  { id: "youshaei", label: "Youshaei", desc: "Two color pop", textPreview: "TO GET", highlight: "#00ff00", color: "#fff" },
+  { id: "podp", label: "Pod P", desc: "Pink accent", textPreview: "GET STARTED", highlight: null, color: "#ff69b4" },
+  { id: "mozi", label: "Mozi", desc: "Purple style", textPreview: "CHOOSE A", highlight: null, color: "#a855f7" },
+  { id: "popline", label: "Popline", desc: "Small top text", textPreview: "TO GET STARTED", highlight: null, color: "#fff" },
+  { id: "simple", label: "Simple", desc: "Classic white", textPreview: "CHOOSE A", highlight: null, color: "#fff" },
+  { id: "thinkmedia", label: "Think Media", desc: "Yellow bold", textPreview: "TO GET STARTED", highlight: null, color: "#FFD700" },
+  { id: "tiktok", label: "TikTok", desc: "Purple glow", textPreview: "TO GET STARTED", highlight: null, color: "#a855f7" },
+  { id: "minimal", label: "Minimal", desc: "Subtle grey", textPreview: "To get started", highlight: null, color: "#aaa" },
 ];
 
 function Dashboard({ user }) {
@@ -119,16 +119,16 @@ function Dashboard({ user }) {
           </div>
         ))}
 
-        <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-          <div onClick={() => setShowUpgrade(true)} title="Upgrade"
-            style={{ width: "40px", height: "40px", borderRadius: "10px", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "14px" }}>
-            ⚡
-          </div>
-          <div onClick={() => setShowProfile(!showProfile)} title="Profile"
-            style={{ width: "36px", height: "36px", background: "#a855f7", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "14px", cursor: "pointer" }}>
-            {avatar}
-          </div>
-        </div>
+<div style={{ marginTop: "auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", paddingBottom: "16px" }}>
+  <div onClick={() => setShowUpgrade(true)} title="Upgrade"
+    style={{ width: "40px", height: "40px", borderRadius: "10px", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "14px" }}>
+    ⚡
+  </div>
+  <div onClick={() => setShowProfile(!showProfile)} title="Profile"
+    style={{ width: "36px", height: "36px", background: "#a855f7", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "14px", cursor: "pointer" }}>
+    {avatar}
+  </div>
+</div>
       </div>
 
       {/* Profile Panel */}
@@ -232,20 +232,24 @@ function Dashboard({ user }) {
                     </div>
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "10px" }}>
-                    {CAPTION_PRESETS.map(preset => (
-                      <div key={preset.id} onClick={() => setCaptionStyle(preset.id)}
-                        style={{ background: "#111", border: captionStyle === preset.id ? "2px solid #a855f7" : "2px solid #222", borderRadius: "10px", padding: "10px 6px", cursor: "pointer", textAlign: "center" }}>
-                        <div style={{ background: "#000", borderRadius: "6px", padding: "8px 4px", marginBottom: "6px", minHeight: "36px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          {preset.preview === null && preset.id !== "none" ? (
-                            <span style={{ fontSize: "8px", fontWeight: "bold", color: preset.color }}>{preset.label.toUpperCase()}</span>
-                          ) : preset.id === "none" ? (
-                            <span style={{ fontSize: "14px", color: "#444" }}>⊘</span>
-                          ) : null}
-                        </div>
-                        <div style={{ fontSize: "10px", color: "#aaa" }}>{preset.label}</div>
-                      </div>
-                    ))}
-                  </div>
+                  {CAPTION_PRESETS.map(preset => (
+                 <div key={preset.id} onClick={() => setCaptionStyle(preset.id)}
+                  style={{ background: "#111", border: captionStyle === preset.id ? "2px solid #a855f7" : "2px solid #222", borderRadius: "10px", padding: "10px 6px", cursor: "pointer", textAlign: "center" }}>
+                  <div style={{ background: "#000", borderRadius: "6px", padding: "8px 4px", marginBottom: "6px", minHeight: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {preset.id === "none" ? (
+                  <span style={{ fontSize: "16px", color: "#444" }}>⊘</span>
+                  ) : (
+                    <span style={{ fontSize: "8px", fontWeight: "bold", color: preset.color, textShadow: "1px 1px 2px #000", lineHeight: "1.3", display: "block" }}>
+                    {preset.highlight ? (
+                      <><span style={{ color: preset.highlight }}>{preset.textPreview}</span>{" STARTED"}</>
+                 ) : preset.textPreview}
+                 </span>
+        )}
+      </div>
+      <div style={{ fontSize: "10px", color: "#aaa" }}>{preset.label}</div>
+    </div>
+  ))}
+</div>
                 </div>
               )}
 
